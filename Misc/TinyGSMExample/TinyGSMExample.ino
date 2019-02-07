@@ -51,9 +51,11 @@ const char apn[]  = "zongwap";
 const char user[] = "";
 const char pass[] = "";
 
+int airM = 113;
+
 // Server details
 const char server[] = "111.68.101.20";
-const char resource[] = "/CropHealth/datauploadscript.php?dat=2019&lat=12.11&lng=11.11&airm1=13&airt1=13&soilm1=13&soilt1=13&pn1=1&airm2=13&airt2=13&soilm2=13&soilt2=13&pn2=2&airm3=13&airt3=13&soilm3=13&soilt3=13&pn3=3&airm4=13&airt4=13&soilm4=13&soilt4=13&pn4=4&airm5=13&airt5=13&soilm5=13&soilt5=13&pn5=5";
+String resource = "/CropHealth/datauploadscript.php?dat=2019&lat=12.11&lng=11.11";
 const int  port = 80;
 
 #ifdef DUMP_AT_COMMANDS
@@ -70,6 +72,9 @@ HttpClient http(client, server, port);
 int pwrKey = 9;
 
 void setup() {
+
+  resource = resource + "&airm1=" + airM + "&airt1=" + airM +"&soilm1=13&soilt1=13&pn1=1&airm2=13&airt2=13&soilm2=13&soilt2=13&pn2=2&airm3=13&airt3=13&soilm3=13&soilt3=13&pn3=3&airm4=13&airt4=13&soilm4=13&soilt4=13&pn4=4&airm5=13&airt5=13&soilm5=13&soilt5=13&pn5=5";
+  
   // Set console baud rate
   SerialMon.begin(115200);
   delay(10);
@@ -81,6 +86,8 @@ void setup() {
   delay(2500);
   digitalWrite(pwrKey, LOW);
   delay(1000);
+
+  SerialMon.println(resource);
   
   // Set GSM module baud rate
   SerialAT.begin(115200);
@@ -121,7 +128,7 @@ void loop() {
   SerialMon.print(F("Performing HTTP GET request... "));
   int err = http.get(resource);
 
-  Serial.print("GET Successful");
+  Serial.println("GET Successful");
 
   
   
