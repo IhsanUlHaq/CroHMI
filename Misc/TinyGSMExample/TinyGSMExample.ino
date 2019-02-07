@@ -51,7 +51,21 @@ const char apn[]  = "zongwap";
 const char user[] = "";
 const char pass[] = "";
 
-int airM = 113;
+float airM = 200.0;
+
+float airT = 200.0;
+
+float soilM1 = 200.0;
+float soilM2 = 200.0;
+float soilM3 = 200.0;
+float soilM4 = 200.0;
+float soilM5 = 200.0;
+
+float soilT1 = 200.0;
+float soilT2 = 200.0;
+float soilT3 = 200.0;
+float soilT4 = 200.0;
+float soilT5 = 200.0;
 
 // Server details
 const char server[] = "111.68.101.20";
@@ -73,7 +87,7 @@ int pwrKey = 9;
 
 void setup() {
 
-  resource = resource + "&airm1=" + airM + "&airt1=" + airM +"&soilm1=13&soilt1=13&pn1=1&airm2=13&airt2=13&soilm2=13&soilt2=13&pn2=2&airm3=13&airt3=13&soilm3=13&soilt3=13&pn3=3&airm4=13&airt4=13&soilm4=13&soilt4=13&pn4=4&airm5=13&airt5=13&soilm5=13&soilt5=13&pn5=5";
+  resource = resource + "&airm1=" + airM + "&airt1=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1&airm2=" + airM + "&airt2=" + airT + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2=2&airm3=" + airM + "&airt3=" + airT + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3=3&airm4=" + airM + "&airt4=" + airT + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4&airm5=" + airM + "&airt5=" + airT + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
   
   // Set console baud rate
   SerialMon.begin(115200);
