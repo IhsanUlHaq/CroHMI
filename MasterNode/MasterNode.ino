@@ -27,7 +27,7 @@ const char user[] = "";
 const char pass[] = "";
 
 const char server[] = "111.68.101.20";
-const char resource[] = "/CropHealth/datauploadscript.php?dat=2019-02-06+11:22:34&airm=104&airt=101&soilm=102&soilt=103&lat=12.11&lng=13.11&pn=1";
+String resource = "/CropHealth/datauploadscript.php?dat=2019";
 const int  port = 80;
 
 #ifdef DUMP_AT_COMMANDS
@@ -57,6 +57,10 @@ HttpClient http(client, server, port);
 ---- Other Variable Declaration ----
 
 */
+
+//DHT - Air Moisture and Temperature Sensor
+#include <dht.h>
+dht DHT;
 
 //Including libraries for temperature sensor
 #include <OneWire.h>
@@ -305,10 +309,11 @@ Main Loop
 */
 
 void loop(){
+
   
   Serial.println("---------------------------------------");
 
-//----------------------Node 1-----------------------
+  //----------------------Node 1-----------------------
 
   //Refreshing variables
   Soil_Moisture = 9999;
@@ -349,7 +354,8 @@ void loop(){
   delay(500);
   digitalWrite(S01, LOW);
   
-//----------------------Node 2-----------------------
+  //----------------------Node 2-----------------------
+  
   //Refreshing variables
   Soil_Moisture = 9999;
   Soil_Temp = 9999;
@@ -379,7 +385,7 @@ void loop(){
   delay(500);
   digitalWrite(S02, LOW);
   
-//----------------------Node 3-----------------------
+  //----------------------Node 3-----------------------
 
   //Refreshing variables
   Soil_Moisture = 9999;
@@ -410,7 +416,7 @@ void loop(){
   delay(500);
   digitalWrite(S03, LOW);
   
-//----------------------Node 4-----------------------
+  //----------------------Node 4-----------------------
 
   //Refreshing variables
   Soil_Moisture = 9999;
@@ -441,17 +447,26 @@ void loop(){
   delay(500);
   digitalWrite(S04, LOW);
 
-//----------------------Master Node-----------------------
+  //----------------------Master Node-----------------------
 
   //Refreshing variables
   Soil_Moisture = 9999;
   Soil_Temp = 9999;
   Soil_Temperature = 9999.0;
 
+  //Reading Soil Temperature and Soil Moisture
   soilM5 = analogRead(A0);
   soilTemperatureSensor.requestTemperatures();
   soilT5 = soilTemperatureSensor.getTempCByIndex(0);
-  
+
+  //Reading Air Temperature and Air Moisture
+  int dhtCheck = DHT.read11(52); //Change this pin number after confirmation
+  airM = DHT.humidity;
+  airT = DHT.temperature;
+
+  Serial.println("Getting GPS Data");
+  printGPS();
+  Serial.println("GPS Data Aquisition Complete");
   
   delay(1000);
   
@@ -489,8 +504,29 @@ void loop(){
   Serial.print("Soil Temperature Pole 5: ");
   Serial.println(soilT5);
   Serial.println("");
+  
+  Serial.print("GPS Latitude: ");
+  Serial.println(latitude);
+  Serial.print("GPS Longitutde: ");
+  Serial.println(longitude);
+  Serial.println("");
 
   delay(2000);
+  
+  //Adding all the data to the HTTP GET Query
+  resource = "/CropHealth/datauploadscript.php?dat=2019"; //Resetting the query
+  
+  Serial.println("Adding variables to query");
+  resource = resource + "&lat=" + latitude + "&lng=" + longitude + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
+  Serial.println("");
+
+  delay(2000);
+
+  /*
+
+  GPSR Connection
+  
+  */
 
   SerialMon.print(F("Waiting for network..."));
   if (!modem.waitForNetwork()) {
@@ -502,6 +538,7 @@ void loop(){
 
   SerialMon.print(F("Connecting to "));
   SerialMon.print(apn);
+  SerialMon.print("...");
   if (!modem.gprsConnect(apn, user, pass)) {
     SerialMon.println(" fail");
     delay(10000);
@@ -514,7 +551,7 @@ void loop(){
 
   Serial.print("GET Successful");
   
-  // Shutdown
+  // Disconnect from Server and GPRS to conserve battery
 
   http.stop();
   SerialMon.println(F("Server disconnected"));

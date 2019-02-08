@@ -51,6 +51,9 @@ const char apn[]  = "zongwap";
 const char user[] = "";
 const char pass[] = "";
 
+String latitude = "200.20";
+String longitude = "200.20";
+
 float airM = 200.0;
 
 float airT = 200.0;
@@ -69,7 +72,7 @@ float soilT5 = 200.0;
 
 // Server details
 const char server[] = "111.68.101.20";
-String resource = "/CropHealth/datauploadscript.php?dat=2019&lat=12.11&lng=11.11";
+String resource = "/CropHealth/datauploadscript.php?dat=2019";
 const int  port = 80;
 
 #ifdef DUMP_AT_COMMANDS
@@ -87,7 +90,7 @@ int pwrKey = 9;
 
 void setup() {
 
-  resource = resource + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
+  resource = resource + "&lat=" + latitude + "&lng=" + longitude + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
   
   // Set console baud rate
   SerialMon.begin(115200);
@@ -154,6 +157,6 @@ void loop() {
   modem.gprsDisconnect();
   SerialMon.println(F("GPRS disconnected"));
 
-  // Do nothing forevermore
+  
   
 }
