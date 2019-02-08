@@ -110,8 +110,8 @@ float soilT3 = 200.0;
 float soilT4 = 200.0;
 float soilT5 = 200.0;
 
-String latitude = "123.11";
-String longitude = "123.11";
+String latitude = "12.11";
+String longitude = "12.11";
 
 
 //Pin definition for LED Indication
@@ -137,6 +137,19 @@ void setup() {
 
   //Setting Baud Rate of 9600, might need to switch it to 115200
   Serial.begin(115200);
+
+  //Setting up GPS Connectivity
+  GPSSerial.begin(9600);
+
+  Serial.println("GPS Refreshing");
+  Serial.println("");
+  
+  for(int i=1;i<15;i++){printGPS();}
+
+  Serial.println("");
+  Serial.println("GPS Refreshing Complete");
+  Serial.println("");
+  
 
   //nRF24 Setup
   radio.begin();
@@ -258,7 +271,7 @@ static void printLat(float val, bool valid, int len, int prec)
   {
     
     while (len-- > 1){
-      latitude+="*";
+      latitude+="9";
       SerialMon.print('*');
     }
     SerialMon.print(' ');
@@ -283,7 +296,7 @@ static void printLong(float val, bool valid, int len, int prec)
   {
     
     while (len-- > 1){
-    longitude+="*";
+    longitude+="9";
       SerialMon.print('*');
     }
     SerialMon.print(' ');
@@ -517,7 +530,8 @@ void loop(){
   resource = "/CropHealth/datauploadscript.php?dat=2019"; //Resetting the query
   
   Serial.println("Adding variables to query");
-  resource = resource + "&lat=" + latitude + "&lng=" + longitude + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
+  resource = resource + "&lat=" + latitude + "&lng=" + longitude + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2=2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3=3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
+  Serial.println(resource);
   Serial.println("");
 
   delay(2000);
