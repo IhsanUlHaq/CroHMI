@@ -87,7 +87,7 @@ int pwrKey = 9;
 
 void setup() {
 
-  resource = resource + "&airm1=" + airM + "&airt1=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1&airm2=" + airM + "&airt2=" + airT + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2=2&airm3=" + airM + "&airt3=" + airT + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3=3&airm4=" + airM + "&airt4=" + airT + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4&airm5=" + airM + "&airt5=" + airT + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
+  resource = resource + "&airm=" + airM + "&airt=" + airT +"&soilm1=" + soilM1 + "&soilt1=" + soilT1 + "&pn1=1" + "&soilm2=" + soilM2 + "&soilt2=" + soilT2 + "&pn2" + "&soilm3=" + soilM3 + "&soilt3=" + soilT3 + "&pn3" + "&soilm4=" + soilM4 + "&soilt4=" + soilT4 + "&pn4=4" + "&soilm5=" + soilM5 + "&soilt5=" + soilT5 + "&pn5=5";
   
   // Set console baud rate
   SerialMon.begin(115200);

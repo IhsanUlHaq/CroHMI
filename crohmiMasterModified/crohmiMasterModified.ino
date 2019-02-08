@@ -11,8 +11,15 @@
 #include <TinyGsmClient.h>
 #include <ArduinoHttpClient.h>
 
-//Setting up GSM Module
+//Library for GPS
+#include <TinyGPS++.h>
+TinyGPSPlus gps;
+
+//Hardware Serial Definition
+#define GPSSerial Serial1
 #define SerialMon Serial
+
+//Setting up GSM Module
 #define SerialAT Serial3 //SerialAT is for GSM Module
 
 const char apn[] = "zongwap";
@@ -99,6 +106,9 @@ float soilT3 = 200.0;
 float soilT4 = 200.0;
 float soilT5 = 200.0;
 
+String latitude = "123.11";
+String longitude = "123.11";
+
 
 //Pin definition for LED Indication
 int S01 = 4;
@@ -110,8 +120,8 @@ int S04 = 7;
 int pwrKeyGSM = 8;
 
 //One-time run code
-void setup() 
-{
+void setup() {
+  
   //Setting pin modes for LEDs
   pinMode(S01, OUTPUT);
   pinMode(S02, OUTPUT);
@@ -158,19 +168,23 @@ void setup()
 
 //Functions for nRF24 to work
 
-void Send_data(uint8_t *Slave, int Message)
-{
+void Send_data(uint8_t *Slave, int Message){
+  
   radio.stopListening();
   radio.openWritingPipe(Slave);
   radio.write(&Message, sizeof(Message));
+  
 }
 
-int Recv_data(int check)
-{
+int Recv_data(int check){
+
+  //Configure nRF to receive data
   radio.openReadingPipe(0, Master);
   radio.startListening();
+  
   int Time = millis();
   int Count = Time;  
+  
   while(!radio.available())
   {
     Time = millis();
@@ -184,6 +198,7 @@ int Recv_data(int check)
       return error;
     }
   }
+  
   int received = 9999;
   
   radio.read(&received, sizeof(received));
@@ -204,7 +219,90 @@ int Recv_data(int check)
   }
 }
 
-//Main Loop
+/* 
+
+GPS Functions
+
+*/
+
+void printGPS(){
+  printLat(gps.hdop.hdop(), gps.hdop.isValid(), 6, 1);
+  printLat(gps.location.lat(), gps.location.isValid(), 11, 6);
+  printLong(gps.location.lng(), gps.location.isValid(), 12, 6);
+  SerialMon.println();
+
+  smartDelay(1000);
+
+  if (millis() > 5000 && gps.charsProcessed() < 10)
+    SerialMon.println(F("No GPS data received: check wiring"));
+}
+
+static void smartDelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do 
+  {
+    while (GPSSerial.available())
+      gps.encode(GPSSerial.read());
+  } while (millis() - start < ms);
+}
+
+static void printLat(float val, bool valid, int len, int prec)
+{
+  latitude="";
+  if (!valid)
+  {
+    
+    while (len-- > 1){
+      latitude+="*";
+      SerialMon.print('*');
+    }
+    SerialMon.print(' ');
+  }
+  else
+  {
+    latitude=String(val, prec);
+    SerialMon.print(val, prec);
+    int vi = abs((int)val);
+    int flen = prec + (val < 0.0 ? 2 : 1); // . and -
+    flen += vi >= 1000 ? 4 : vi >= 100 ? 3 : vi >= 10 ? 2 : 1;
+    for (int i=flen; i<len; ++i)
+      SerialMon.print(' ');
+  }
+  smartDelay(0);
+}
+
+static void printLong(float val, bool valid, int len, int prec)
+{
+  longitude="";
+  if (!valid)
+  {
+    
+    while (len-- > 1){
+    longitude+="*";
+      SerialMon.print('*');
+    }
+    SerialMon.print(' ');
+  }
+  else
+  {
+    longitude=String(val, prec);
+    SerialMon.print(val, prec);
+    int vi = abs((int)val);
+    int flen = prec + (val < 0.0 ? 2 : 1); // . and -
+    flen += vi >= 1000 ? 4 : vi >= 100 ? 3 : vi >= 10 ? 2 : 1;
+    for (int i=flen; i<len; ++i)
+      SerialMon.print(' ');
+  }
+  smartDelay(0);
+}
+
+
+/* 
+
+Main Loop
+
+*/
 
 void loop(){
   
