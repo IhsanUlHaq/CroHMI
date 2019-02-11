@@ -22,6 +22,9 @@ TinyGPSPlus gps;
 //Setting up GSM Module
 #define SerialAT Serial3 //SerialAT is for GSM Module
 
+//Including library for WatchDog Timer
+#include <avr/wdt.h>
+
 const char apn[] = "zongwap";
 const char user[] = "";
 const char pass[] = "";
@@ -72,7 +75,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature soilTemperatureSensor(&oneWire);
 
 //Defining radio pins
-RF24 radio(9, 10); // CE, CSN
+RF24 radio(44, 46); // CE, CSN
 
 //Defining addresses for nRF24 Modules
 byte Master[6] =   "00001";
@@ -121,7 +124,7 @@ int S03 = 6;
 int S04 = 7;
 
 //Enable Pin for GSM Module
-int pwrKeyGSM = 8;
+int pwrKeyGSM = 9;
 
 //One-time run code
 void setup() {
@@ -181,6 +184,15 @@ void setup() {
   String modemInfo = modem.getModemInfo();
   SerialMon.print(F("Modem: "));
   SerialMon.println(modemInfo);
+}
+
+//WatchDog Timer to reset MCU
+void reboot() {
+  Serial.println("RESETING MCU");
+  
+  wdt_disable();
+  wdt_enable(WDTO_15MS);
+  while (1) {}
 }
 
 //Functions for nRF24 to work
@@ -329,9 +341,9 @@ void loop(){
   //----------------------Node 1-----------------------
 
   //Refreshing variables
-  Soil_Moisture = 9999;
-  Soil_Temp = 9999;
-  Soil_Temperature = 9999.0;
+  //Soil_Moisture = 9999;
+  //Soil_Temp = 9999;
+  //Soil_Temperature = 9999.0;
   
   Serial.println("---------Node 01---------");
   Send_data(Slave_01, number);
@@ -572,6 +584,8 @@ void loop(){
 
   modem.gprsDisconnect();
   SerialMon.println(F("GPRS disconnected"));
+
+  reboot();
 
   
 }
