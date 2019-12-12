@@ -4,101 +4,22 @@
 #Rquired Libraries
 import serial
 import time
-import sys
+
 from struct import Struct
 import threading
-import time
+
 import sqlite3
 import Queue
 from sqlite3 import Error
 import requests
 
 #Display
-import Adafruit_SSD1306
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+
 import socket
 
 ###########################################################
 #################### DISPLAY SETUP ########################
 ###########################################################
-
-RST = 0
-
-disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
-disp.begin()
-disp.clear()
-disp.display()
-
-width = disp.width
-height = disp.heightl
-
-image1 = Image.new('1', (width, height))
-
-
-
-def oledReady():
-    
-    draw = ImageDraw.Draw(image1)
-    draw.rectangle((0, 0, width, height), outline=0, fill=0)
-
-    padding = -2
-    top = padding
-
-    bottom = height-padding
-    x=0
-    font = ImageFont.truetype('fonts/Helvetica.ttf', 12)
-    
-    disp.clear()
-    disp.display()
-    draw.text((x, top+4), "Ready", font = font, fill = 255)
-     
-    if (isInternetConnected()):
-         draw.rectangle((124,0,128,12), outline=0, fill=255)
-         draw.rectangle((120,4,124,12), outline=0, fill=255)
-         draw.rectangle((116,8,120,12), outline=0, fill=255)
-    else:
-        draw.rectangle((124,0,128,12), outline=0, fill=255)
-        draw.rectangle((120,4,124,12), outline=0, fill=255)
-        draw.rectangle((116,8,120,12), outline=0, fill=255)
-        draw.rectangle((116,8,128,10), outline=0, fill=255)
-
-    disp.image(image1)
-    disp.display()
-
-def oledData(dataFromNode, nodeNumber, errLDB, errRDB):
-
-    draw = ImageDraw.Draw(image1)
-    draw.rectangle((0, 0, width, height), outline=0, fill=0)
-
-    padding = -2
-    top = padding
-
-    bottom = height-padding
-    x=0
-    font = ImageFont.truetype('fonts/Helvetica.ttf', 12)
-    
-    disp.clear()
-    disp.display()
-    draw.text((x, top+4), "Rcvd From: " + str(nodeNumber), font = font, fill = 255)
-    draw.text((x, top+16), "Air: " + str(dataFromNode[3]) + "C, " + str(dataFromNode[4]) + "%", font = font, fill = 255)
-    draw.text((x, top+28), "Soil: " + str(dataFromNode[2]) + "C, " + str(dataFromNode[1]) + "%", font = font, fill = 255)
-    draw.text((x, top+40), "Battery Voltage: " + str(dataFromNode[0]) + "V", font = font, fill = 255)
-    draw.text((x, top+52), "LDB: " + str(errLDB) + ", RDB: " + str(errRDB), font = font, fill = 255)
-     
-    if (isInternetConnected()):
-         draw.rectangle((124,0,128,12), outline=0, fill=255)
-         draw.rectangle((120,4,124,12), outline=0, fill=255)
-         draw.rectangle((116,8,120,12), outline=0, fill=255)
-    else:
-         draw.rectangle((124,0,128,12), outline=0, fill=255)
-         draw.rectangle((120,4,124,12), outline=0, fill=255)
-         draw.rectangle((116,8,120,12), outline=0, fill=255)
-         draw.rectangle((116,8,128,10), outline=0, fill=255)
-
-    disp.image(image1)
-    disp.display()
 
 
 def isInternetConnected():
@@ -149,7 +70,7 @@ class dataPacket:
     def addValues(self, reconstructed):
 
         if len(reconstructed) == 14:             #Checks to see if the incoming bytes are correct in size
-              self.nodeNumber = round(rec[0], 3)
+              self.nodeNumber = rec[0]
               self.batteryVoltage = round(rec[1], 3)
               self.soilMoisture = round(rec[2], 3)
               self.soilTemperature = round(rec[3], 3)
@@ -177,14 +98,24 @@ dataPacketStack = Queue.Queue(0)
 structure = Struct('ifffffffffffff')
 
 # Defines the Serial Port to listen to and what baudrate
-ser = serial.Serial(
-    port='/dev/ttyACM0',
-    baudrate=9600,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=None
-    )
+try :
+    ser = serial.Serial(
+            port='/dev/ttyACM0',
+            baudrate=9600,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            timeout=None
+            )
+except:
+    ser = serial.Serial(
+            port='/dev/ttyACM1',
+            baudrate=9600,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            timeout=None
+            )
 
 ###########################################################
 ##################### DATABASE ############################
@@ -368,7 +299,7 @@ def createTables(conn):
 
 def createEntryNodeOne(conn, nodeData):
     
-    sql = ''' INSERT INTO nodeone(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodeone(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -376,7 +307,7 @@ def createEntryNodeOne(conn, nodeData):
 
 def createEntryNodeTwo(conn, nodeData):
     
-    sql = ''' INSERT INTO nodetwo(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodetwo(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -384,7 +315,7 @@ def createEntryNodeTwo(conn, nodeData):
 
 def createEntryNodeThree(conn, nodeData):
     
-    sql = ''' INSERT INTO nodethree(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodethree(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -392,7 +323,7 @@ def createEntryNodeThree(conn, nodeData):
 
 def createEntryNodeFour(conn, nodeData):
     
-    sql = ''' INSERT INTO nodefour(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodefour(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -400,7 +331,7 @@ def createEntryNodeFour(conn, nodeData):
 
 def createEntryNodeFive(conn, nodeData):
 
-    sql = ''' INSERT INTO nodefive(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodefive(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -408,7 +339,7 @@ def createEntryNodeFive(conn, nodeData):
 
 
 def createEntryNodeSix(conn, nodeData):
-    sql = ''' INSERT INTO nodesix(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodesix(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -416,7 +347,7 @@ def createEntryNodeSix(conn, nodeData):
 
 
 def createEntryNodeSeven(conn, nodeData):
-    sql = ''' INSERT INTO nodeseven(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodeseven(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -424,7 +355,7 @@ def createEntryNodeSeven(conn, nodeData):
 
 
 def createEntryNodeEight(conn, nodeData):
-    sql = ''' INSERT INTO nodeeight(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3 float,CO float,NO2 float,C3H8 float,C4H10 float,CH4 float,H2 float,C2H5OH float)
+    sql = ''' INSERT INTO nodeeight(batteryVoltage,soilMoisture,soilTemperature,airMoisture,airTemperature,NH3,CO,NO2,C3H8,C4H10,CH4,H2,C2H5OH)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, nodeData)
@@ -441,12 +372,6 @@ def createEntryNodeEight(conn, nodeData):
 ###########################################################
 
 def runInBackground():
-
-    currentOLEDStatusCode = 2
-    count = 20
-
-    oledReady()
-    currentOLEDStatusCode = shouldBeStatusCode()
 
     errLDB = False
     errRDB = False
@@ -494,7 +419,9 @@ def runInBackground():
              createTables(conn)
 
              print("Stack is not empty")
-               
+             print("Node no:")
+             print(currentStackObject.nodeNumber)
+             
              if currentStackObject.nodeNumber == 1:
                  print("Values received from node 1")
                  createEntryNodeOne(conn, nodeData)
@@ -550,25 +477,11 @@ def runInBackground():
 
              conn.close()
 
-             oledData(nodeData, currentStackObject.nodeNumber, errLDB, errRDB)
+             
 
-             currentOLEDStatusCode = 2
+        
 
-             count = 30
-
-        else:
-            if (shouldBeStatusCode() != currentOLEDStatusCode):
-                if (currentOLEDStatusCode == 2):
-                    if (count == 0):
-                            oledReady()
-                            currentOLEDStatusCode = shouldBeStatusCode()
-                    else:
-                        count = count - 1
-                else:
-                     oledReady()
-                     currentOLEDStatusCode = shouldBeStatusCode()
-
-        print("Stack is empty, no object to process")
+        #print("Stack is empty, no object to process")
         time.sleep(0.5)
 
 # Run the function in background
@@ -585,18 +498,18 @@ dataPushThread.start()
 ###########################################################
 
 
-def selfValuesInterrupt():
-    while(True):
+#def selfValuesInterrupt():
+    #while(True):
           
-        time.sleep(300)
-        print("Asked for Self Values")
-        ser.write('x')
+        #time.sleep(60)
+        #print("Asked for Self Values")
+        #ser.write('x')
           
      
 
-selfValuesInterruptThread = threading.Thread(target=selfValuesInterrupt, args=())
-selfValuesInterruptThread.daemon = True
-selfValuesInterruptThread.start()
+#selfValuesInterruptThread = threading.Thread(target=selfValuesInterrupt, args=())
+#selfValuesInterruptThread.daemon = True
+#selfValuesInterruptThread.start()
 
 ###########################################################
 ###########################################################
@@ -610,10 +523,20 @@ while True:
      
 
     #Defining object according to the blueprint
+    
     receivedValues = dataPacket()
+    x = ser.read(56)
+    print(str(x))#Reads values from Serial Port
+    rec = structure.unpack_from(x)
+    print("--------------------------")
+    print("Rec Values")
+    print(rec[0])#Reconstructs integers and floats from incoming bytes
+    print(rec[1])
+    print(rec[2])
+    print(rec[3])
 
-    x = ser.read(62)    #Reads values from Serial Port
-    rec = structure.unpack_from(x)     #Reconstructs integers and floats from incoming bytes
+
+    print("--------------------------")
     receivedValues.addValues(rec)      #Assembles the data into a python class object
 
     dataPacketStack.put(receivedValues)
