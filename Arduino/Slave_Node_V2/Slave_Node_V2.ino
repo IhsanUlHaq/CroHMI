@@ -4,7 +4,7 @@
 #include <RH_RF95.h>                          //Used for Lora module
 #include <SPI.h>
 
-#define CLIENT_ADDRESS 4
+#define CLIENT_ADDRESS 10
 #define SERVER_ADDRESS 2
  
 
@@ -93,7 +93,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  delay(300000);
+  
   gatherDataFromSensors();
   
   memcpy(buf, &dataFromSensor, sizeof(dataFromSensor));
@@ -122,6 +122,8 @@ void loop() {
   }
   else
     Serial.println("sendtoWait failed");
-  
+
+
+  delay(10000);
   
 }
