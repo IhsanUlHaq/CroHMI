@@ -4,7 +4,7 @@
 #include <RH_RF95.h>                          //Used for Lora module
 #include <SPI.h>
 
-#define CLIENT_ADDRESS 10
+#define CLIENT_ADDRESS 8
 #define SERVER_ADDRESS 2
  
 
@@ -29,7 +29,7 @@ struct nodeData{
 
 
 int batteryVoltagePin = A3;  
-byte buff[8];
+byte buff[sizeof(Sensor_data)];
 int Read;
 byte buf[RH_RF95_MAX_MESSAGE_LEN];
 double packetNo = 0;
@@ -56,7 +56,7 @@ void gatherDataFromSensors(){
       if(SoftSerial.available()>0){
          Serial.println("Recieving data");
         //availableBytes = SoftSerial.available();
-        for(int n = 0 ; n < 8; n++){
+        for(int n = 0 ; n < sizeof(buff); n++){
         buff[n] = SoftSerial.read();
         }
         //SoftSerial.readBytes(buf,8);
@@ -124,6 +124,6 @@ void loop() {
     Serial.println("sendtoWait failed");
 
 
-  delay(10000);
+  delay(300000);
   
 }

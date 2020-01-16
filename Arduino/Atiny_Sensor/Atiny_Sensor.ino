@@ -23,7 +23,7 @@ struct Sensor_data{
 
 Sensor_data data;
 int value;
-byte buff [sizeof(Sensor_data)];
+byte buff [8];
 const byte soilMoisturePin = A1;
 float High_moisture = 0.0;
 float Low_moisture = 0.0;
@@ -78,7 +78,7 @@ void loop() {
   
   if (SoftSerial.available()>0){
     value = SoftSerial.read(); 
-    delay(100);
+    delay(50);
     if(value == 1){              //1 to read and send data
       sensors.requestTemperatures();
       
