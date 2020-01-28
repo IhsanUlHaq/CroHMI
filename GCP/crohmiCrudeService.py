@@ -8,14 +8,14 @@ import requests
 import pymongo
 
 
-broker = "mqtt-dashboard.com"
+broker = "35.235.109.47"
 topic = "Crohmi"
 URL = "http://crohmi.seecs.nust.edu.pk/datauploadscript.php"
 inCominglist = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 
 #Creating MongoDB client
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+myclient = pymongo.MongoClient("mongodb://iotlab:1234@localhost:27017/CrohmiDB")
 
  #Creating new database
 mydb = myclient["CrohmiDB"]
@@ -66,12 +66,13 @@ def uploadDataToServer(datalist):
         ('h2' , float(datalist[13])),
         ('c2h5oh' , float(datalist[14]))
         )
-
-    try:
-        r = requests.get(url = URL, params = PARAMS)
-
-    except requests.ConnectionError:
-        print("Unable to connect to server, check internet connection.")
+    if (float(datalist[1]) < 1 or float(datalist[1]) > 10 ):
+        print("Data is wrong");
+    else:   
+        try:
+            r = requests.get(url = URL, params = PARAMS)
+        except requests.ConnectionError:
+            print("Unable to connect to server, check internet connection.")
 
 def insertToDb(datalist):
     now = datetime.now()
@@ -92,10 +93,12 @@ def insertToDb(datalist):
         "H2" : float(datalist[13]),
         "C2H5OH" : float(datalist[14])
     }
-
-    x = mycol.insert_one(mydict)
-    print("Data is Inserted with id")
-    print(x.inserted_id)
+    if (float(datalist[1]) < 1 or float(datalist[1]) > 10 ):
+        print("Data is wrong");
+    else:
+        x = mycol.insert_one(mydict)
+        print("Data is Inserted with id")
+        print(x.inserted_id)
 
 while 1:
     client.loop_start()

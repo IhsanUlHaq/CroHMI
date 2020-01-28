@@ -28,7 +28,7 @@ byte buff[sizeof(allData)];
 
 const char* ssid ="NIAQ"; //replace this with your wifi  name
 const char* password ="indoorairquality"; //replace with your wifi password
-char hostname[] ="mqtt-dashboard.com"; //replace this with IP address of machine 
+char hostname[] ="35.235.109.47"; //replace this with IP address of machine 
 //on which broker is installed
 #define TOKEN "killmachine"
 
@@ -71,7 +71,7 @@ void loop()
     
  
   
-  delay(500);//delay 5 Sec
+  delay(50);
 }
 
 void MQTTPOST(String payload)
@@ -142,4 +142,3 @@ String dataString(allData * data){
   //payload += "|";
    return payload;
   }
-

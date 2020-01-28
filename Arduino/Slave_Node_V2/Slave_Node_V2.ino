@@ -8,7 +8,7 @@
 #define SERVER_ADDRESS 2
  
 
-#define Reset 10
+#define Reset 8
 #define RX 6
 #define TX 7
 SoftwareSerial SoftSerial(RX, TX);                 //Readind data from A3 pin of Board
@@ -124,6 +124,6 @@ void loop() {
     Serial.println("sendtoWait failed");
 
 
-  delay(300000);
+  delay(2000);
   
 }

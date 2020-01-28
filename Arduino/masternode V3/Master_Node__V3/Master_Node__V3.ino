@@ -8,7 +8,7 @@
 
 #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
-#define DHTPIN 9
+#define DHTPIN 8
 
 
 #define Reset 10
@@ -75,7 +75,7 @@ byte buff[8];
 byte buff2[sizeof(allData)];
 int value;
 long timenow = 0;
-int period = 5000;
+int period = 10000;
 
 
 
@@ -108,7 +108,7 @@ void gatherDataFromSensors(){
     
     dataFromSensor.soilTemperature = Sensordata.soilTemperature;
     dataFromSensor.soilMoisture = Sensordata.soilMoisture;
-    dataFromSensor.batteryVoltage = analogRead(batteryVoltagePin)/(0.12821);   //Voltage Divider between 1k and 6.8 k
+    dataFromSensor.batteryVoltage = (analogRead(batteryVoltagePin)*(5/1024))/(0.12821);   //Voltage Divider between 1k and 6.8 k
     dataFromSensor.nodeNumber = 1;
     dataFromSensor.airMoisture = dht.readHumidity();
     dataFromSensor.airTemperature = dht.readTemperature();
@@ -121,7 +121,9 @@ void gatherDataFromSensors(){
     dataFromSensor.CH4 = gas.measure_CH4();
     dataFromSensor.H2 = gas.measure_H2();
     dataFromSensor.C2H5OH = gas.measure_C2H5OH();
-    Serial.println(dataFromSensor.NH3);
+ 
+    Serial.println(dataFromSensor.airMoisture);
+    Serial.println(dataFromSensor.airTemperature);
     Serial.println("Data Gathered");
     // printData(dataFromSensor);
 
@@ -176,13 +178,15 @@ if (millis() > timenow *1000 + period){
       
       memcpy(&incomingData, buf, sizeof(incomingData));
 
+      Serial.print("Data Receuved from Node = ");
+      Serial.println(incomingData.nodeNumber);
       allData slaveData;
       slaveData.soilTemperature = incomingData.soilTemperature;
       slaveData.soilMoisture = incomingData.soilMoisture;
       slaveData.batteryVoltage = incomingData.batteryVoltage; 
       slaveData.nodeNumber = incomingData.nodeNumber;
-      slaveData.airMoisture = incomingData.airMoisture;
-      slaveData.airTemperature = incomingData.airTemperature;
+      slaveData.airMoisture = dht.readHumidity();
+      slaveData.airTemperature =  dht.readTemperature();
 
       //printData(slaveData);
       
@@ -191,11 +195,13 @@ if (millis() > timenow *1000 + period){
       memcpy(buff2 , &slaveData , sizeof(buff2));
       ESPSerial.write(buff2 , sizeof(buff2));
 
-      
+      Serial.println("Data Sent from Node = ");
+      Serial.println(incomingData.nodeNumber);
       // Send a reply back to the originator client
-      if (!manager.sendtoWait(data, sizeof(data), from)){}
+      if (!manager.sendtoWait(data, sizeof(data), from)){
+        Serial.println("sendtoWait failed");}
       
-        Serial.println("sendtoWait failed");
+        
     }
   }
 }
