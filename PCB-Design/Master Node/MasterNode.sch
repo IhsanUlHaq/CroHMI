@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.5.0">
+<eagle version="9.4.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -4834,15 +4834,16 @@ http://arduino.cc/en/Main/ArduinoBoardDuemilanove</description>
 </net>
 <net name="N$5" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="9"/>
 <pinref part="R1" gate="G$1" pin="2"/>
-<wire x1="72.39" y1="20.32" x2="90.17" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="90.17" y1="20.32" x2="90.17" y2="31.75" width="0.1524" layer="91"/>
 <wire x1="90.17" y1="31.75" x2="96.52" y2="31.75" width="0.1524" layer="91"/>
 <wire x1="96.52" y1="31.75" x2="96.52" y2="38.1" width="0.1524" layer="91"/>
-<junction x="90.17" y="31.75"/>
 <wire x1="96.52" y1="38.1" x2="101.6" y2="38.1" width="0.1524" layer="91"/>
 <pinref part="J2" gate="J$1" pin="2"/>
+<wire x1="90.17" y1="31.75" x2="78.74" y2="31.75" width="0.1524" layer="91"/>
+<wire x1="78.74" y1="31.75" x2="78.74" y2="33.02" width="0.1524" layer="91"/>
+<junction x="90.17" y="31.75"/>
+<pinref part="IC1" gate="G$1" pin="5"/>
+<wire x1="78.74" y1="33.02" x2="72.39" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="GND" class="0">
