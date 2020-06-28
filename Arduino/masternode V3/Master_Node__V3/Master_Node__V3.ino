@@ -1,17 +1,18 @@
+#include <SoftwareSerial.h> 
 #include <RH_RF95.h>
 #include <RHReliableDatagram.h>
 
 #include <SPI.h>
 #include "DHT.h"
-#include "MutichannelGasSensor.h"
-#include <SoftwareSerial.h> 
+//#include "MutichannelGasSensor.h"
+
 
 #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
-#define DHTPIN 8
+#define DHTPIN 5
 
 
-#define Reset 10
+#define Reset 8
 #define RX 6
 #define TX 7
 #define RX2 3
@@ -21,7 +22,7 @@
 SoftwareSerial SoftSerial(RX, TX); 
 SoftwareSerial ESPSerial(RX2, TX2);  
 
-#define DHTTYPE DHT11
+#define DHTTYPE DHT11 
 DHT dht(DHTPIN, DHTTYPE);
 
 struct Sensor_data{
@@ -73,7 +74,7 @@ byte buf[sizeof(nodeData)];
 int batteryVoltagePin = A3;  
 byte buff[8];
 byte buff2[sizeof(allData)];
-int value;
+int value = -1;
 long timenow = 0;
 int period = 10000;
 
@@ -84,35 +85,32 @@ void gatherDataFromSensors(){
     value = 1;
     
     // say what you got:
-    //Serial.print("I received: ");
-    //Serial.println(value, DEC); 
+    Serial.print("I received: ");
+    Serial.println(value, DEC); 
 
     SoftSerial.write(value);
     
-      delay(100);
-      if(SoftSerial.available()>0){
-         //Serial.println("Recieving data");
-        //availableBytes = SoftSerial.available();
-        for(int n = 0 ; n < 8; n++){
+    delay(50);
+    if(SoftSerial.available()>0){
+
+       for(int n = 0 ; n < sizeof(buff); n++){
         buff[n] = SoftSerial.read();
         }
-        //SoftSerial.readBytes(buf,8)
-        
         memcpy(&Sensordata , buff ,  sizeof(buff));
         Serial.println(Sensordata.soilMoisture);
         Serial.println(Sensordata.soilTemperature);
-        
       }
-      else{Serial.println("Serial not Available");}
+      else{
+        Serial.println("Serial not Available");
+        }
 
     
     dataFromSensor.soilTemperature = Sensordata.soilTemperature;
     dataFromSensor.soilMoisture = Sensordata.soilMoisture;
     dataFromSensor.batteryVoltage = (analogRead(batteryVoltagePin)*(5/1024))/(0.12821);   //Voltage Divider between 1k and 6.8 k
     dataFromSensor.nodeNumber = 1;
-    dataFromSensor.airMoisture = dht.readHumidity();
     dataFromSensor.airTemperature = dht.readTemperature();
-    dataFromSensor.NH3 = gas.measure_NH3();
+    /*dataFromSensor.NH3 = gas.measure_NH3();
     dataFromSensor.CO = gas.measure_CO();
     dataFromSensor.NO2 = gas.measure_NO2();
     dataFromSensor.C3H8 = gas.measure_C3H8();
@@ -120,11 +118,12 @@ void gatherDataFromSensors(){
     dataFromSensor.C4H10 = gas.measure_C4H10();
     dataFromSensor.CH4 = gas.measure_CH4();
     dataFromSensor.H2 = gas.measure_H2();
-    dataFromSensor.C2H5OH = gas.measure_C2H5OH();
- 
+    dataFromSensor.C2H5OH = gas.measure_C2H5OH();*/
+    dataFromSensor.airMoisture = dht.readHumidity();
+    
     Serial.println(dataFromSensor.airMoisture);
     Serial.println(dataFromSensor.airTemperature);
-    Serial.println("Data Gathered");
+    //Serial.println("Data Gathered");
     // printData(dataFromSensor);
 
      
@@ -132,7 +131,7 @@ void gatherDataFromSensors(){
     memcpy(buff2 , &dataFromSensor , sizeof(buff2));
     ESPSerial.write(buff2 , sizeof(buff2));
    //Serial.write((const uint8_t *) &dataFromSensor, sizeof(dataFromSensor));
-   Serial.println("Data Sent");
+   //Serial.println("Data Sent");
   
 }
 
@@ -144,10 +143,10 @@ void setup() {
   Serial.println("Starting...");
   dht.begin();
   Serial.println("power on!");
-  gas.begin(0x04);//the default I2C address of the slave is 0x04
-  gas.powerOn();
-  Serial.print("Firmware Version = ");
-  Serial.println(gas.getVersion());
+  //gas.begin(0x04);//the default I2C address of the slave is 0x04
+  //gas.powerOn();
+  //Serial.print("Firmware Version = ");
+  //Serial.println(gas.getVersion());
   Serial.println("-----------------");
   while (!Serial) ; 
   if (!manager.init())
@@ -180,6 +179,10 @@ if (millis() > timenow *1000 + period){
 
       Serial.print("Data Receuved from Node = ");
       Serial.println(incomingData.nodeNumber);
+      Serial.print("Soil Moisture = ");
+      Serial.println(incomingData.soilMoisture);
+      Serial.print("Soil Temperature = ");
+      Serial.println(incomingData.soilTemperature);
       allData slaveData;
       slaveData.soilTemperature = incomingData.soilTemperature;
       slaveData.soilMoisture = incomingData.soilMoisture;

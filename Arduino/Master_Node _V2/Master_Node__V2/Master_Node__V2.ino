@@ -3,7 +3,7 @@
 
 #include <SPI.h>
 #include "DHT.h"
-#include "MutichannelGasSensor.h"
+//#include "MutichannelGasSensor.h"
 #include <SoftwareSerial.h> 
 
 #define CLIENT_ADDRESS 1
@@ -102,7 +102,7 @@ void gatherDataFromSensors(){
     dataFromSensor.nodeNumber = 1;
     dataFromSensor.airMoisture = dht.readHumidity();
     dataFromSensor.airTemperature = dht.readTemperature();
-    dataFromSensor.NH3 = gas.measure_NH3();
+    /*dataFromSensor.NH3 = gas.measure_NH3();
     dataFromSensor.CO = gas.measure_CO();
     dataFromSensor.NO2 = gas.measure_NO2();
     dataFromSensor.C3H8 = gas.measure_C3H8();
@@ -110,9 +110,9 @@ void gatherDataFromSensors(){
     dataFromSensor.C4H10 = gas.measure_C4H10();
     dataFromSensor.CH4 = gas.measure_CH4();
     dataFromSensor.H2 = gas.measure_H2();
-    dataFromSensor.C2H5OH = gas.measure_C2H5OH();
+    dataFromSensor.C2H5OH = gas.measure_C2H5OH();*/
     //Serial.println("Data Gathered");
-    // printData(dataFromSensor);
+    //printData(dataFromSensor);
 
      /* std::string s = "";
       for (int i = 0, i< 14 , i++){
@@ -133,8 +133,8 @@ void setup() {
   //Serial.println("Starting...");
   dht.begin();
   //Serial.println("power on!");
-  gas.begin(0x04);//the default I2C address of the slave is 0x04
-  gas.powerOn();
+  //gas.begin(0x04);//the default I2C address of the slave is 0x04
+  //gas.powerOn();
   //Serial.print("Firmware Version = ");
   //Serial.println(gas.getVersion());
   //Serial.println("-----------------");
@@ -200,7 +200,7 @@ if (Serial.available()){
   Serial.print("soilMoisture = ");
   Serial.println(x.soilMoisture);
   Serial.print("soilTemperature = ");
-  Serial.println(x.soilTemperature);*/
+  Serial.println(x.soilTemperature);
   /*Serial.print("airTemperature = ");
   Serial.println(x.airTemperature);
   Serial.print("airMoisture = ");
