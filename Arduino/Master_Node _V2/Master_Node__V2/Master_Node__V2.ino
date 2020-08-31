@@ -3,7 +3,7 @@
 
 #include <SPI.h>
 #include "DHT.h"
-//#include "MutichannelGasSensor.h"
+#include "MutichannelGasSensor.h"
 #include <SoftwareSerial.h> 
 
 #define CLIENT_ADDRESS 1
@@ -68,16 +68,18 @@ byte buf[sizeof(nodeData)];
 int batteryVoltagePin = A3;  
 byte buff[8];
 int value;
+long timenow = 0;
+int period = 10000;
 
 void gatherDataFromSensors(){
     
-    value = 1;
+    //value = 1;
     
     // say what you got:
     //Serial.print("I received: ");
     //Serial.println(value, DEC); 
 
-    SoftSerial.write(value);
+    //SoftSerial.write(value);
     
       delay(100);
       if(SoftSerial.available()>0){
@@ -102,7 +104,7 @@ void gatherDataFromSensors(){
     dataFromSensor.nodeNumber = 1;
     dataFromSensor.airMoisture = dht.readHumidity();
     dataFromSensor.airTemperature = dht.readTemperature();
-    /*dataFromSensor.NH3 = gas.measure_NH3();
+    dataFromSensor.NH3 = gas.measure_NH3();
     dataFromSensor.CO = gas.measure_CO();
     dataFromSensor.NO2 = gas.measure_NO2();
     dataFromSensor.C3H8 = gas.measure_C3H8();
@@ -110,9 +112,9 @@ void gatherDataFromSensors(){
     dataFromSensor.C4H10 = gas.measure_C4H10();
     dataFromSensor.CH4 = gas.measure_CH4();
     dataFromSensor.H2 = gas.measure_H2();
-    dataFromSensor.C2H5OH = gas.measure_C2H5OH();*/
+    dataFromSensor.C2H5OH = gas.measure_C2H5OH();
     //Serial.println("Data Gathered");
-    //printData(dataFromSensor);
+    printData(dataFromSensor);
 
      /* std::string s = "";
       for (int i = 0, i< 14 , i++){
@@ -122,8 +124,8 @@ void gatherDataFromSensors(){
 
    
    Serial.write((const uint8_t *) &dataFromSensor, sizeof(dataFromSensor));
-   //Serial.println("Data Sent"); bb
-  
+   //Serial.println("Data Sent");
+
 }
 
 void setup() {
@@ -133,8 +135,8 @@ void setup() {
   //Serial.println("Starting...");
   dht.begin();
   //Serial.println("power on!");
-  //gas.begin(0x04);//the default I2C address of the slave is 0x04
-  //gas.powerOn();
+  gas.begin(0x04);//the default I2C address of the slave is 0x04
+  gas.powerOn();
   //Serial.print("Firmware Version = ");
   //Serial.println(gas.getVersion());
   //Serial.println("-----------------");
@@ -150,9 +152,10 @@ void loop() {
 
 if (Serial.available()){
 
-    if (Serial.read() == 'x'){
+    if (millis() > timenow *1000 + period){
+
      gatherDataFromSensors();
-    }
+     timenow = millis()/1000;
   }
   
   
@@ -176,7 +179,7 @@ if (Serial.available()){
       slaveData.airMoisture = incomingData.airMoisture;
       slaveData.airTemperature = incomingData.airTemperature;
 
-      //printData(slaveData);
+      printData(slaveData);
       
       Serial.write((const uint8_t *) &slaveData, sizeof(slaveData));
       
@@ -185,29 +188,30 @@ if (Serial.available()){
       if (!manager.sendtoWait(data, sizeof(data), from)){}
       
         //Serial.println("sendtoWait failed");
+    
     }
   }
 }
+}
 
-
-/*void printData(allData x){
+void printData(allData x){
   Serial.println("--------------------------------------");
   Serial.println("             Sensor Data               ");
   Serial.print("nodeNumber = ");
   Serial.println(x.nodeNumber);
-  /*Serial.print("batteryVoltage = ");
+  Serial.print("batteryVoltage = ");
   Serial.println(x.batteryVoltage);
   Serial.print("soilMoisture = ");
   Serial.println(x.soilMoisture);
   Serial.print("soilTemperature = ");
   Serial.println(x.soilTemperature);
-  /*Serial.print("airTemperature = ");
+  Serial.print("airTemperature = ");
   Serial.println(x.airTemperature);
   Serial.print("airMoisture = ");
-  Serial.println(x.airMoisture);*/
-  /*Serial.print("NH3 = ");
+  Serial.println(x.airMoisture);
+  Serial.print("NH3 = ");
   Serial.println(x.NH3);
-  Serial.print("CO = ");
+  /*Serial.print("CO = ");
   Serial.println(x.CO);
   Serial.print("NO2 = ");
   Serial.println(x.NO2);
@@ -222,6 +226,6 @@ if (Serial.available()){
   Serial.print("C2H5OH = ");
   Serial.println(x.C2H5OH);
  
-  Serial.println("--------------------------------------");
+  Serial.println("--------------------------------------");*/
  
-  }*/
+  }

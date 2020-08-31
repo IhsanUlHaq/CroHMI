@@ -4,23 +4,21 @@
 
 #include <SPI.h>
 #include "DHT.h"
-//#include "MutichannelGasSensor.h"
+#include "MutichannelGasSensor.h"
 
 
 #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
-#define DHTPIN 5
+#define DHTPIN 8
 
 
 #define Reset 8
 #define RX 6
 #define TX 7
-#define RX2 3
-#define TX2 4
 
 
 SoftwareSerial SoftSerial(RX, TX); 
-SoftwareSerial ESPSerial(RX2, TX2);  
+
 
 #define DHTTYPE DHT11 
 DHT dht(DHTPIN, DHTTYPE);
@@ -60,9 +58,8 @@ struct allData{
   float H2 = 0.0;
   float C2H5OH = 0.0;
 };
-
-
 allData dataFromSensor;
+allData slaveData;
 
 RH_RF95 driver;
 RHReliableDatagram manager(driver, SERVER_ADDRESS);
@@ -82,35 +79,29 @@ int period = 10000;
 
 void gatherDataFromSensors(){
     
-    value = 1;
     
-    // say what you got:
-    Serial.print("I received: ");
-    Serial.println(value, DEC); 
-
-    SoftSerial.write(value);
-    
-    delay(50);
+    delay(100);
     if(SoftSerial.available()>0){
 
        for(int n = 0 ; n < sizeof(buff); n++){
         buff[n] = SoftSerial.read();
         }
         memcpy(&Sensordata , buff ,  sizeof(buff));
-        Serial.println(Sensordata.soilMoisture);
-        Serial.println(Sensordata.soilTemperature);
+        //Serial.println(Sensordata.soilMoisture);
+        //Serial.println(Sensordata.soilTemperature);
       }
       else{
-        Serial.println("Serial not Available");
+        //Serial.println("Serial not Available");
         }
 
     
     dataFromSensor.soilTemperature = Sensordata.soilTemperature;
     dataFromSensor.soilMoisture = Sensordata.soilMoisture;
-    dataFromSensor.batteryVoltage = (analogRead(batteryVoltagePin)*(5/1024))/(0.12821);   //Voltage Divider between 1k and 6.8 k
+    dataFromSensor.batteryVoltage = 0;//(analogRead(batteryVoltagePin)*(5/1024))/(0.12821);   //Voltage Divider between 1k and 6.8 k
     dataFromSensor.nodeNumber = 1;
+    dataFromSensor.airMoisture = dht.readHumidity();
     dataFromSensor.airTemperature = dht.readTemperature();
-    /*dataFromSensor.NH3 = gas.measure_NH3();
+    dataFromSensor.NH3 = gas.measure_NH3();
     dataFromSensor.CO = gas.measure_CO();
     dataFromSensor.NO2 = gas.measure_NO2();
     dataFromSensor.C3H8 = gas.measure_C3H8();
@@ -118,19 +109,19 @@ void gatherDataFromSensors(){
     dataFromSensor.C4H10 = gas.measure_C4H10();
     dataFromSensor.CH4 = gas.measure_CH4();
     dataFromSensor.H2 = gas.measure_H2();
-    dataFromSensor.C2H5OH = gas.measure_C2H5OH();*/
-    dataFromSensor.airMoisture = dht.readHumidity();
+    dataFromSensor.C2H5OH = gas.measure_C2H5OH();
+ 
     
-    Serial.println(dataFromSensor.airMoisture);
-    Serial.println(dataFromSensor.airTemperature);
+    //Serial.println(dataFromSensor.airMoisture);
+    //Serial.println(dataFromSensor.airTemperature);
     //Serial.println("Data Gathered");
-    // printData(dataFromSensor);
+    //printData(dataFromSensor);
 
      
 
-    memcpy(buff2 , &dataFromSensor , sizeof(buff2));
-    ESPSerial.write(buff2 , sizeof(buff2));
-   //Serial.write((const uint8_t *) &dataFromSensor, sizeof(dataFromSensor));
+    //memcpy(buff2 , &dataFromSensor , sizeof(buff2));
+    //ESPSerial.write(buff2 , sizeof(buff2));
+   Serial.write((const uint8_t *) &dataFromSensor, sizeof(dataFromSensor));
    //Serial.println("Data Sent");
   
 }
@@ -139,18 +130,18 @@ void setup() {
   // put your setup code here, to run once:
   SoftSerial.begin(9600);
   Serial.begin(9600);
-  ESPSerial.begin(115200);
-  Serial.println("Starting...");
+  //ESPSerial.begin(115200);
+  //Serial.println("Starting...");
   dht.begin();
-  Serial.println("power on!");
-  //gas.begin(0x04);//the default I2C address of the slave is 0x04
-  //gas.powerOn();
+  //Serial.println("power on!");
+  gas.begin(0x04);//the default I2C address of the slave is 0x04
+  gas.powerOn();
   //Serial.print("Firmware Version = ");
   //Serial.println(gas.getVersion());
-  Serial.println("-----------------");
+  //Serial.println("-----------------");
   while (!Serial) ; 
   if (!manager.init())
-    Serial.println("init failed");
+    //Serial.println("init failed");
   pinMode(Reset,OUTPUT);
   
 }
@@ -177,13 +168,7 @@ if (millis() > timenow *1000 + period){
       
       memcpy(&incomingData, buf, sizeof(incomingData));
 
-      Serial.print("Data Receuved from Node = ");
-      Serial.println(incomingData.nodeNumber);
-      Serial.print("Soil Moisture = ");
-      Serial.println(incomingData.soilMoisture);
-      Serial.print("Soil Temperature = ");
-      Serial.println(incomingData.soilTemperature);
-      allData slaveData;
+     
       slaveData.soilTemperature = incomingData.soilTemperature;
       slaveData.soilMoisture = incomingData.soilMoisture;
       slaveData.batteryVoltage = incomingData.batteryVoltage; 
@@ -193,21 +178,21 @@ if (millis() > timenow *1000 + period){
 
       //printData(slaveData);
       
-      //Serial.write((const uint8_t *) &slaveData, sizeof(slaveData));
+      Serial.write((const uint8_t *) &slaveData, sizeof(slaveData));
 
-      memcpy(buff2 , &slaveData , sizeof(buff2));
-      ESPSerial.write(buff2 , sizeof(buff2));
+     /* memcpy(buff2 , &slaveData , sizeof(buff2));
+      ESPSerial.write(buff2 , sizeof(buff2));*/
 
-      Serial.println("Data Sent from Node = ");
-      Serial.println(incomingData.nodeNumber);
+      //Serial.println("Data Sent from Node = ");
+      //Serial.println(incomingData.nodeNumber);
       // Send a reply back to the originator client
       if (!manager.sendtoWait(data, sizeof(data), from)){
-        Serial.println("sendtoWait failed");}
-      
-        
+        //Serial.println("sendtoWait failed");
+      }  
     }
   }
 }
+
 
 
 /*void printData(allData x){
@@ -215,19 +200,19 @@ if (millis() > timenow *1000 + period){
   Serial.println("             Sensor Data               ");
   Serial.print("nodeNumber = ");
   Serial.println(x.nodeNumber);
-  /*Serial.print("batteryVoltage = ");
+  Serial.print("batteryVoltage = ");
   Serial.println(x.batteryVoltage);
   Serial.print("soilMoisture = ");
   Serial.println(x.soilMoisture);
   Serial.print("soilTemperature = ");
-  Serial.println(x.soilTemperature);*/
-  /*Serial.print("airTemperature = ");
+  Serial.println(x.soilTemperature);
+  Serial.print("airTemperature = ");
   Serial.println(x.airTemperature);
   Serial.print("airMoisture = ");
-  Serial.println(x.airMoisture);*/
-  /*Serial.print("NH3 = ");
+  Serial.println(x.airMoisture);
+  Serial.print("NH3 = ");
   Serial.println(x.NH3);
-  Serial.print("CO = ");
+  /*Serial.print("CO = ");
   Serial.println(x.CO);
   Serial.print("NO2 = ");
   Serial.println(x.NO2);
@@ -244,4 +229,4 @@ if (millis() > timenow *1000 + period){
  
   Serial.println("--------------------------------------");
  
-  }*/
+ }*/
