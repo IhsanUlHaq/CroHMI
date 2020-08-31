@@ -456,7 +456,7 @@ def runInBackground():
              elif currentStackObject.nodeNumber == 6:
                  print("Values received from node 6")
                  createEntryNodeSix(conn, nodeData)
-                 print("Entry created in SQLite Database for Node 5")
+                 print("Entry created in SQLite Database for Node 6")
                  errLDB = True
 
              elif currentStackObject.nodeNumber == 7:

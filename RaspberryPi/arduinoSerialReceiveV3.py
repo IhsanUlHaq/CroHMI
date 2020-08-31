@@ -542,6 +542,10 @@ while True:
     print(rec[1])
     print(rec[2])
     print(rec[3])
+    print(rec[4])
+    print(rec[5])
+    print(rec[6])
+    print(rec[7])
 
 
     print("--------------------------")

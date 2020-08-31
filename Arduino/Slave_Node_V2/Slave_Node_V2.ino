@@ -4,7 +4,7 @@
 #include <RH_RF95.h>                          //Used for Lora module
 #include <SPI.h>
 
-#define CLIENT_ADDRESS 8
+#define CLIENT_ADDRESS 4
 #define SERVER_ADDRESS 2
  
 
@@ -124,6 +124,6 @@ void loop() {
     Serial.println("sendtoWait failed");
 
 
-  delay(2000);
+  delay(10000);
   
 }
